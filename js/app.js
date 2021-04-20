@@ -1,5 +1,7 @@
 'use strict';
 
+let selectElements = [];
+
 function HornGallery(horns){
   this.title = horns.title;
   this.url = horns.image_url;
@@ -18,6 +20,9 @@ HornGallery.prototype.render = function () {
   $hornclone.find('p').text(this.description);
   $hornclone.find('h3').text(this.horns);
   $hornclone.find('h4').text(this.keyword);
+  $hornclone.attr('class', `${this.keyword}`);
+  $hornclone.attr('id', 'photo-template');
+
 
 };
 
@@ -29,12 +34,22 @@ HornGallery.readJson = () => {
     dataType : 'json'
 
   };
+
   $.ajax('data/page-1.json',ajaxSettings)
     .then(data => {
       data.forEach(item => {
         let horn = new HornGallery(item);
         horn.render();
+
+        // if (!selectElements.includes(horn.keyword)) selectElements.push(horn.keyword);
+        if(selectElements.includes(horn.keyword)!==true){
+          selectElements.push(horn.keyword);
+          $('.selectItem').append(`<option value="${horn.keyword}"> ${horn.keyword} </option>`);
+        }
       });
+
+      $('#photo-template').hide();
+      renderKeywords();
     });
 
 
@@ -43,38 +58,26 @@ HornGallery.readJson = () => {
 $(() => HornGallery.readJson());
 
 
+function renderKeywords() {
+  selectElements.forEach((item) => {
 
-// let selectElements=[];
+    let optionTag = `<option value='${item}'> ${item}</option>`;
+    $('select').append(optionTag);
+  });
+}
 
-// $.ajax('data/page-1.json')
-//   .then(data => {
-//     data.forEach(obj => {
-//       if(!selectElements.includes(obj.keyword)) {selectElements.push(obj.keyword);}
-//       let newObj = new HornGallery(obj);
-//       newObj.render();
 
-//     });
-//     selectElements.forEach((keyword,idx) => {
-//       let newOption = ` <option value="${keyword}" id = "${idx}">${keyword}</option>`;
-//       $('select').append(newOption);
-//     });
-//   });
+$('select').on('change', filterFunction);
+function filterFunction() {
+  let select = $(this).val();
+  if (select === 'default') {
+    $('div').show();
+    $('#photo-template').hide();
+  } else {
+    $('div').hide();
+    $(`.${select}`).show();
+  }
 
-// $('select').on('change', function () {
-//   let $newValue = $('select').val();
-//   console.log($('this').attr('id'));
-//   let len = $('div').length;
-//   for(let i = 1; i <= len; i++ ){
-//     if ($newValue === 'default') {
-//       $('div').removeClass('displays');
-//     }
-//     else if($(`div h5:eq(${i})`).text() === $newValue){
-//       $(`div:eq(${i})`).removeClass('displays');
-//     }
-//     else if($(`div h5:eq(${i})`).text() !== $newValue){
-//     //   console.log($(`div h5:eq(${i})`).text());
-//       $(`div:eq(${i})`).addClass('displays');
-//     }
+}
 
-//   }
-// });
+
